@@ -33,7 +33,7 @@ def test_optim_multi_params(optim_class, args):
     params = {'x': jnp.array([1., 1., 1.]), 'y': jnp.array([-1, -1., -1.])}
     opt = optim_class(*args)
     opt_state = opt.init(params)
-    for i in range(2000):
+    for i in range(1300):
         opt_state = step(opt_state, opt)
     for _, param in opt.get_params(opt_state).items():
         assert jnp.allclose(param, jnp.zeros(3))

@@ -178,7 +178,7 @@ def test_model_with_mask_false():
             numpyro.sample("y", dist.Normal(x), obs=1)
 
     kernel = NUTS(model)
-    mcmc = MCMC(kernel, num_warmup=500, num_samples=500, num_chains=1)
+    mcmc = MCMC(kernel, num_warmup=110, num_samples=120, num_chains=1)
     mcmc.run(random.PRNGKey(1))
     assert_allclose(mcmc.get_samples()['x'].mean(), 0., atol=0.1)
 

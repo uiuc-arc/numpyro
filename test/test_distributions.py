@@ -541,7 +541,7 @@ def test_beta_binomial_log_prob(total_count, shape):
     concentration1 = np.exp(np.random.normal(size=shape))
     value = jnp.arange(1 + total_count)
 
-    num_samples = 100000
+    num_samples = 7800
     probs = np.random.beta(concentration1, concentration0, size=(num_samples,) + shape)
     log_probs = dist.Binomial(total_count, probs).log_prob(value)
     expected = logsumexp(log_probs, 0) - jnp.log(num_samples)
@@ -556,7 +556,7 @@ def test_gamma_poisson_log_prob(shape):
     gamma_rate = np.exp(np.random.normal(size=shape))
     value = jnp.arange(15)
 
-    num_samples = 300000
+    num_samples = 84000
     poisson_rate = np.random.gamma(gamma_conc, 1 / gamma_rate, size=(num_samples,) + shape)
     log_probs = dist.Poisson(poisson_rate).log_prob(value)
     expected = logsumexp(log_probs, 0) - jnp.log(num_samples)

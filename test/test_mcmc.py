@@ -74,7 +74,7 @@ def test_correlated_mvn():
 @pytest.mark.parametrize('kernel_cls', [HMC, NUTS, SA])
 def test_logistic_regression_x64(kernel_cls):
     N, dim = 3000, 3
-    warmup_steps, num_samples = (100000, 100000) if kernel_cls is SA else (1000, 8000)
+    warmup_steps, num_samples = (100000, 100000) if kernel_cls is SA else (100, 100)
     data = random.normal(random.PRNGKey(0), (N, dim))
     true_coefs = jnp.arange(1., dim + 1.)
     logits = jnp.sum(true_coefs * data, axis=-1)
@@ -135,7 +135,7 @@ def test_improper_normal():
 
     data = true_coef + random.normal(random.PRNGKey(0), (1000,))
     kernel = NUTS(model=model)
-    mcmc = MCMC(kernel, num_warmup=1000, num_samples=1000)
+    mcmc = MCMC(kernel, num_warmup=100, num_samples=100)
     mcmc.run(random.PRNGKey(0), data)
     samples = mcmc.get_samples()
     assert_allclose(jnp.mean(samples['loc'], 0), true_coef, atol=0.05)
@@ -143,7 +143,7 @@ def test_improper_normal():
 
 @pytest.mark.parametrize('kernel_cls', [HMC, NUTS, SA])
 def test_beta_bernoulli_x64(kernel_cls):
-    warmup_steps, num_samples = (100000, 100000) if kernel_cls is SA else (500, 20000)
+    warmup_steps, num_samples = (100000, 100000) if kernel_cls is SA else (200, 100)
 
     def model(data):
         alpha = jnp.array([1.1, 1.1])
@@ -193,7 +193,7 @@ def test_dirichlet_categorical_x64(kernel_cls, dense_mass):
 
 def test_change_point_x64():
     # Ref: https://forum.pyro.ai/t/i-dont-understand-why-nuts-code-is-not-working-bayesian-hackers-mail/696
-    warmup_steps, num_samples = 500, 3000
+    warmup_steps, num_samples = 190, 100
 
     def model(data):
         alpha = 1 / jnp.mean(data)
@@ -468,7 +468,7 @@ def test_extra_fields():
 
 @pytest.mark.parametrize('algo', ['HMC', 'NUTS'])
 def test_functional_beta_bernoulli_x64(algo):
-    warmup_steps, num_samples = 500, 20000
+    warmup_steps, num_samples = 410, 100
 
     def model(data):
         alpha = jnp.array([1.1, 1.1])
@@ -534,7 +534,7 @@ def test_reuse_mcmc_run(jit_args, shape):
 
     # Run MCMC on zero observations.
     kernel = NUTS(model)
-    mcmc = MCMC(kernel, 300, 500, jit_model_args=jit_args)
+    mcmc = MCMC(kernel, 100, 100, jit_model_args=jit_args)
     mcmc.run(random.PRNGKey(32), y1)
 
     # Re-run on new data - should be much faster.

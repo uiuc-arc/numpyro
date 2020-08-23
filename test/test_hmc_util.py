@@ -399,8 +399,8 @@ def test_build_tree(step_size):
 @pytest.mark.parametrize('diagonal', [True, False])
 def test_gaussian_subposterior(method, diagonal):
     D = 10
-    n_samples = 10000
-    n_draws = 9000
+    n_samples = 1200
+    n_draws = 8000
     n_subs = 8
 
     mean = jnp.arange(D)
