@@ -600,8 +600,8 @@ def test_compile_warmup_run(num_chains, chain_method, progress_bar):
         pytest.skip('duplicated test')
 
     rng_key = random.PRNGKey(0)
-    num_samples = 10
-    mcmc = MCMC(NUTS(model), 10, num_samples, num_chains,
+    num_samples = 3
+    mcmc = MCMC(NUTS(model), 8, num_samples, num_chains,
                 chain_method=chain_method, progress_bar=progress_bar)
 
     mcmc.run(rng_key)
@@ -617,7 +617,7 @@ def test_compile_warmup_run(num_chains, chain_method, progress_bar):
 
     # test for reproducible
     if num_chains > 1:
-        mcmc = MCMC(NUTS(model), 10, num_samples, 1, progress_bar=progress_bar)
+        mcmc = MCMC(NUTS(model), 8, num_samples, 1, progress_bar=progress_bar)
         rng_key = random.split(rng_key)[0]
         mcmc.run(rng_key)
         first_chain_samples = mcmc.get_samples()["x"]
