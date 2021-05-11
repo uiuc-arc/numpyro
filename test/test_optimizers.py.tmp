@@ -1,0 +1,71 @@
+import pytest
+from jax import grad, jit, partial
+import jax.numpy as jnp
+from numpyro import optim
+import numpy as np
+import numpy as np
+import sys
+import pytest
+
+def sample_to_string(mystr):
+    if isinstance(mystr, list):
+        return '[{0}]'.format(','.join([sample_to_string(i) for i in mystr]))
+    if isinstance(mystr, np.ndarray):
+        return np.array2string(mystr, max_line_width=np.inf, precision=100, separator=',', threshold=np.inf).replace('\n', '')
+    try:
+        mystr = np.array(mystr)
+        return np.array2string(mystr, max_line_width=np.inf, precision=100, separator=',', threshold=np.inf).replace('\n', '')
+    except:
+        pass
+    try:
+        if isinstance(mystr, torch.Tensor):
+            return np.array2string(mystr.detach().numpy(), max_line_width=np.inf, precision=100, separator=',', threshold=np.inf).replace('\n', '')
+    except:
+        pass
+    try:
+        if isinstance(mystr, tf.Tensor):
+            with tf.Session():
+                return np.array2string(mystr.eval(), max_line_width=np.inf, precision=100, separator=',', threshold=np.inf).replace('\n', '')
+    except:
+        pass
+    return str(mystr)
+
+def loss(params):
+    return jnp.sum(((params['x'] ** 2) + (params['y'] ** 2)))
+
+@partial(jit, static_argnums=(1,))
+def step(opt_state, optim):
+    params = optim.get_params(opt_state)
+    g = grad(loss)(params)
+    return optim.update(g, opt_state)
+
+@pytest.mark.parametrize('optim_class, args', [(optim.Adam, (0.01,)), (optim.ClippedAdam, (0.01,)), (optim.Adagrad, (0.1,)), (optim.Momentum, (0.01, 0.5)), (optim.RMSProp, (0.01, 0.95)), (optim.RMSPropMomentum, (0.0001,)), (optim.SGD, (0.01,))])
+def test_optim_multi_params(optim_class, args):
+    params = {'x': jnp.array([1.0, 1.0, 1.0]), 'y': jnp.array([(- 1), (- 1.0), (- 1.0)])}
+    opt = optim_class(*args)
+    opt_state = opt.init(params)
+    for i in range('<loop_iter>'):
+        opt_state = step(opt_state, opt)
+    for (_, param) in opt.get_params(opt_state).items():
+        val_1 = param
+        print(('log>>>%s' % sample_to_string(val_1)))
+        val_2 = jnp.zeros(3)
+        print(('log>>>%s' % sample_to_string(val_2)))
+        np.testing.assert_allclose(val_1, val_2, atol=1e-08, rtol=1e-05)
+
+@pytest.mark.parametrize('optim_class, args', [(optim.Adam, (0.01,)), (optim.ClippedAdam, (0.01,)), (optim.Adagrad, (0.1,)), (optim.Momentum, (0.01, 0.5)), (optim.RMSProp, (0.01, 0.95)), (optim.RMSPropMomentum, (0.0001,)), (optim.SGD, (0.01,))])
+def test_numpyrooptim_no_double_jit(optim_class, args):
+    opt = optim_class(*args)
+    state = opt.init(jnp.zeros(10))
+    my_fn_calls = 0
+
+    @jit
+    def my_fn(state, g):
+        nonlocal my_fn_calls
+        my_fn_calls += 1
+        state = opt.update(g, state)
+        return state
+    state = my_fn(state, (jnp.ones(10) * 1.0))
+    state = my_fn(state, (jnp.ones(10) * 2.0))
+    state = my_fn(state, (jnp.ones(10) * 3.0))
+    assert (my_fn_calls == 1)

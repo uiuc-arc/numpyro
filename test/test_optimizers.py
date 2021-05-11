@@ -6,7 +6,7 @@ import pytest
 from jax import grad, jit, partial
 import jax.numpy as jnp
 
-from numpyro import optim
+from numpyro import optim;import numpy as np
 
 
 def loss(params):
@@ -36,7 +36,7 @@ def test_optim_multi_params(optim_class, args):
     for i in range(2000):
         opt_state = step(opt_state, opt)
     for _, param in opt.get_params(opt_state).items():
-        assert jnp.allclose(param, jnp.zeros(3))
+        np.testing.assert_allclose(param, jnp.zeros(3), atol=1e-08, rtol=1e-05)
 
 
 # note: this is somewhat of a bruteforce test. testing directly from
